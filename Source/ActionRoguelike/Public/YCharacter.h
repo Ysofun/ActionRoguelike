@@ -8,6 +8,9 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UYInteractionComponent;
+class UYAttributeComponent;
+class UYActionComponent;
 
 UCLASS()
 class ACTIONROGUELIKE_API AYCharacter : public ACharacter
@@ -18,6 +21,12 @@ public:
 	// Sets default values for this character's properties
 	AYCharacter();
 
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(Exec)
+	void HealSelf(float Amount = 100);
+
 protected:
 
 	UPROPERTY(VisibleAnywhere)
@@ -26,16 +35,35 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
 	
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(VisibleAnywhere)
+	UYInteractionComponent* InteractionComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+	UYAttributeComponent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
+	UYActionComponent* ActionComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName TimeToHitParamName;
 	
 	void MoveForward(float value);
+	void MoveRight(float value);
+	
+	void SprintStart();
+	void SprintStop();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void PrimaryAttack();
+	void SpecialAttack();
+	void DashAttack();
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void PrimaryInteract();
+
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, UYAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	virtual void PostInitializeComponents() override;
+
+	virtual FVector GetPawnViewLocation() const override;
 
 };
