@@ -17,8 +17,6 @@ UYInteractionComponent::UYInteractionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	FindInteractDelay = 0.5f;
-
 	TraceDistance = 500.0f;
 	TraceRadius = 30.0f;
 
@@ -29,14 +27,20 @@ UYInteractionComponent::UYInteractionComponent()
 void UYInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_FindInteract, this, &UYInteractionComponent::FindBestInteractable, FindInteractDelay, true);
 }
 
 
 void UYInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn->IsLocallyControlled())
+	{
+		FindBestInteractable();
+		/*GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, GetNameSafe(FcousedActor));*/
+	}
 }
 
 
@@ -69,7 +73,7 @@ void UYInteractionComponent::FindBestInteractable()
 	{
 		if (bDebugDraw)
 		{
-			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 2.0f);
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 0.0f);
 		}
 
 		AActor* HitActor = Hit.GetActor();
@@ -110,20 +114,25 @@ void UYInteractionComponent::FindBestInteractable()
 
 	if (bDebugDraw)
 	{
-		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 2.0f);
+		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 0.0f);
 	}
 }
 
 
 void UYInteractionComponent::PrimaryInteract()
 {
-	if (FcousedActor == nullptr)
+	ServerInteract(FcousedActor);
+}
+
+
+void UYInteractionComponent::ServerInteract_Implementation(AActor* InFcous)
+{
+	if (InFcous == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No Focus Actor to interact.");
 		return;
 	}
 
 	APawn* MyPawn = Cast<APawn>(GetOwner());
-	IYGameplayInterface::Execute_Interact(FcousedActor, MyPawn);
+	IYGameplayInterface::Execute_Interact(InFcous, MyPawn);
 }
-

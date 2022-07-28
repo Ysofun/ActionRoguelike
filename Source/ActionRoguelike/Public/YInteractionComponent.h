@@ -19,21 +19,14 @@ public:
 
 	void PrimaryInteract();
 
-public:	
-	// Sets default values for this component's properties
-	UYInteractionComponent();
-
 protected:
+
+	UFUNCTION(Server, Reliable)
+	void ServerInteract(AActor* InFcous);
 
 	void FindBestInteractable();
 
-	// Called when the game starts
 	virtual void BeginPlay() override;
-
-	FTimerHandle TimerHandle_FindInteract;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Delay")
-	float FindInteractDelay;
 
 	UPROPERTY()
 	AActor* FcousedActor;
@@ -54,7 +47,9 @@ protected:
 	UYWorldUserWidget* DefaultWidgetInstance;
 
 public:	
-	// Called every frame
+	
+	UYInteractionComponent();
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 		
