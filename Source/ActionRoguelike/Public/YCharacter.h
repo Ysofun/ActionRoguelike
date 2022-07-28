@@ -47,6 +47,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParamName;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Attack")
+	float RageCost;
+
 	void MoveForward(float value);
 	void MoveRight(float value);
 	

@@ -187,7 +187,7 @@ void AYGameModeBase::RespawnPlayerElapsed(AController* Controller)
 	if (ensure(Controller))
 	{
 		Controller->UnPossess();
-
+	
 		RestartPlayer(Controller);
 	}
 }

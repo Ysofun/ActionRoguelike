@@ -42,6 +42,7 @@ AYCharacter::AYCharacter()
 
 	// Data Initialize
 	TimeToHitParamName = "TimeToHit";
+	RageCost = 40.0f;
 }
 
 void AYCharacter::PostInitializeComponents()
@@ -118,7 +119,11 @@ void AYCharacter::PrimaryAttack()
 
 void AYCharacter::SpecialAttack()
 {
-	ActionComp->StartActionByName(this, "BlackHole");
+	if (AttributeComp->GetRage() > RageCost)
+	{
+		ActionComp->StartActionByName(this, "BlackHole");
+		AttributeComp->ApplyRageChange(this, -RageCost);
+	}
 }
 
 void AYCharacter::DashAttack()
