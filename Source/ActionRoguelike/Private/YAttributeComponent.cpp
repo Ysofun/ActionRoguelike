@@ -3,6 +3,7 @@
 
 #include "YAttributeComponent.h"
 #include "YGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 
 static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplier"), 1.0f, TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
@@ -16,6 +17,8 @@ UYAttributeComponent::UYAttributeComponent()
 	RageMax = 100;
 	Rage = 0;
 	RagePerHealth = 5.0f;
+
+	SetIsReplicatedByDefault(true);
 }
 
 bool UYAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
@@ -37,7 +40,11 @@ bool UYAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	Health = FMath::Clamp<float>(Health + Delta, 0, HealthMax);
 
 	float ActualDelta = Health - OldHealth;
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+	
+	if (ActualDelta != 0.0f)
+	{
+		MulticastHealthChanged(InstigatorActor, Health, Delta);
+	}
 
 	if (ActualDelta < 0.0f)
 	{
@@ -71,6 +78,12 @@ bool UYAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 }
 
 
+bool UYAttributeComponent::Kill(AActor* InstigatorActor)
+{
+	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
+}
+
+
 UYAttributeComponent* UYAttributeComponent::GetAttribute(AActor* FromActor)
 {
 	if (FromActor)
@@ -80,6 +93,7 @@ UYAttributeComponent* UYAttributeComponent::GetAttribute(AActor* FromActor)
 
 	return nullptr;
 }
+
 
 bool UYAttributeComponent::IsActorAlive(AActor* Actor)
 {
@@ -92,37 +106,53 @@ bool UYAttributeComponent::IsActorAlive(AActor* Actor)
 	return false;
 }
 
-bool UYAttributeComponent::Kill(AActor* InstigatorActor)
-{
-	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
-}
 
 bool UYAttributeComponent::IsFullHealth() const
 {
 	return Health == HealthMax;
 }
 
+
 bool UYAttributeComponent::IsAlive() const
 {
 	return Health > 0.0f;
 }
+
 
 float UYAttributeComponent::GetHealth() const
 {
 	return Health;
 }
 
+
 float UYAttributeComponent::GetHealthMax() const
 {
 	return HealthMax;
 }
+
 
 float UYAttributeComponent::GetRage() const
 {
 	return Rage;
 }
 
+
 float UYAttributeComponent::GetRageMax() const
 {
 	return RageMax;
+}
+
+
+void UYAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
+}
+
+
+void UYAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UYAttributeComponent, Health);
+	DOREPLIFETIME(UYAttributeComponent, HealthMax);
 }

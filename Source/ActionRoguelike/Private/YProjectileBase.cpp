@@ -27,6 +27,8 @@ AYProjectileBase::AYProjectileBase()
 
 	FlightSound = CreateDefaultSubobject<UAudioComponent>("FlightSound");
 	FlightSound->SetupAttachment(SphereComp);
+
+	//SetReplicates(true);
 }
 
 void AYProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

@@ -21,6 +21,8 @@ AYPowerUpActor::AYPowerUpActor()
 	MeshComp->SetupAttachment(RootComponent);
 
 	RespawnTime = 10.0f;
+
+	SetReplicates(true);
 }
 
 void AYPowerUpActor::Interact_Implementation(APawn* InstigatorPawn)
