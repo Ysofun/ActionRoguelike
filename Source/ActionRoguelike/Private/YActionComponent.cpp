@@ -11,6 +11,8 @@
 UYActionComponent::UYActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	SetIsReplicatedByDefault(true);
 }
 
 
@@ -75,6 +77,12 @@ bool UYActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FailedMsg);
 				continue;
 			}
+
+			if (!GetOwner()->HasAuthority())
+			{
+				ServerStartAction(Instigator, ActionName);
+			}
+
 			Action->StartAction(Instigator);
 			return true;
 		}
@@ -97,3 +105,10 @@ bool UYActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 	}
 	return false;
 }
+
+
+void UYActionComponent::ServerStartAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StartActionByName(Instigator, ActionName);
+}
+
