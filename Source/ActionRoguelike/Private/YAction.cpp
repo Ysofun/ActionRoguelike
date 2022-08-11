@@ -4,9 +4,15 @@
 #include "YAction.h"
 #include "Engine/World.h"
 #include "YActionComponent.h"
+#include "../ActionRoguelike.h"
+#include "Net/UnrealNetwork.h"
 
 
 
+void UYAction::Initialize(UYActionComponent* NewActionComp)
+{
+	ActionComp = NewActionComp;
+}
 
 
 bool UYAction::CanStart_Implementation(AActor* Instigator)
@@ -29,33 +35,37 @@ bool UYAction::CanStart_Implementation(AActor* Instigator)
 void UYAction::StartAction_Implementation(AActor* Instigator)
 {
 	UE_LOG(LogTemp, Log, TEXT("Running: %s"), *GetNameSafe(this));
+	//LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	UYActionComponent* Comp = GetOwningComponent();
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
 
-	bIsRunning = true;
+	RepData.bIsRunning = true;
+	RepData.Instigator = Instigator;
 }
 
 
 void UYAction::StopAction_Implementation(AActor* Instigator)
 {
 	UE_LOG(LogTemp, Log, TEXT("Stopped: %s"), *GetNameSafe(this));
+	//LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
-	ensureAlways(bIsRunning);
+	//ensureAlways(bIsRunning);
 
 	UYActionComponent* Comp = GetOwningComponent();
 	Comp->ActiveGameplayTags.RemoveTags(GrantsTags);
 	
-	bIsRunning = false;
+	RepData.bIsRunning = false;
+	RepData.Instigator = Instigator;
 }
 
 
 UWorld* UYAction::GetWorld() const
 {
-	UActorComponent* Comp = Cast<UActorComponent>(GetOuter());
-	if (Comp)
+	AActor* MyActor = Cast<AActor>(GetOuter());
+	if (MyActor)
 	{
-		return Comp->GetWorld();
+		return MyActor->GetWorld();
 	}
 	return nullptr;
 }
@@ -63,12 +73,35 @@ UWorld* UYAction::GetWorld() const
 
 UYActionComponent* UYAction::GetOwningComponent() const
 {
-	return Cast<UYActionComponent>(GetOuter());
+	//return Cast<UYActionComponent>(GetOuter());
+
+	return ActionComp;
+}
+
+
+void UYAction::OnRep_RepData()
+{
+	if (RepData.bIsRunning)
+	{
+		StartAction(RepData.Instigator);
+	}
+	else
+	{
+		StopAction(RepData.Instigator);
+	}
 }
 
 
 bool UYAction::IsRunning() const
 {
-	return bIsRunning;
+	return RepData.bIsRunning;
 }
 
+
+void UYAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UYAction, RepData);
+	DOREPLIFETIME(UYAction, ActionComp);
+}

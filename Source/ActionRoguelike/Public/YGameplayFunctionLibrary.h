@@ -17,6 +17,9 @@ class ACTIONROGUELIKE_API UYGameplayFunctionLibrary : public UBlueprintFunctionL
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	static bool ApplyRage(AActor* RageCauser, AActor* TargetActor, float RageAmount);
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	static bool ApplyDamage(AActor* DamageCauser, AActor* TargetActor, float DamageAmount);
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")

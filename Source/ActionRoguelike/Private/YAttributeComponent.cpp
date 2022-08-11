@@ -36,29 +36,26 @@ bool UYAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	}
 
 	float OldHealth = Health;
+	float NewHealth = FMath::Clamp<float>(Health + Delta, 0, HealthMax);
 
-	Health = FMath::Clamp<float>(Health + Delta, 0, HealthMax);
-
-	float ActualDelta = Health - OldHealth;
+	float ActualDelta = NewHealth - OldHealth;
 	
-	if (ActualDelta != 0.0f)
+	if (GetOwner()->HasAuthority())
 	{
-		MulticastHealthChanged(InstigatorActor, Health, Delta);
-	}
+		Health = NewHealth;
 
-	if (ActualDelta < 0.0f)
-	{
-		if (Health == 0.0f)
+		if (ActualDelta != 0.0f)
+		{
+			MulticastHealthChanged(InstigatorActor, Health, Delta);
+		}
+
+		if (ActualDelta < 0.0f && Health == 0.0f)
 		{
 			AYGameModeBase* GM = GetWorld()->GetAuthGameMode<AYGameModeBase>();
 			if (GM)
 			{
 				GM->OnActorKilled(GetOwner(), InstigatorActor);
 			}
-		}
-		else
-		{
-			ApplyRageChange(InstigatorActor, RagePerHealth * abs(ActualDelta));
 		}
 	}
 
@@ -75,6 +72,12 @@ bool UYAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 	OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
 
 	return ActualDelta != 0;
+}
+
+
+void UYAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }
 
 
@@ -140,12 +143,6 @@ float UYAttributeComponent::GetRage() const
 float UYAttributeComponent::GetRageMax() const
 {
 	return RageMax;
-}
-
-
-void UYAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
-{
-	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }
 
 

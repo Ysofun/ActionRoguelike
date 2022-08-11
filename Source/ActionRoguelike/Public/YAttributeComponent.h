@@ -8,7 +8,6 @@
 
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, InstigatorActor, UYAttributeComponent*, OwningComp, float, NewHealth, float, Delta);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAttributeChanged, AActor*, InstigatorActor, UYAttributeComponent*, OwningComp, float, NewValue, float, Delta);
 
 

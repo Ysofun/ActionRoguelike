@@ -3,6 +3,9 @@
 
 #include "YActionComponent.h"
 #include "YAction.h"
+#include "../ActionRoguelike.h"
+#include "Net/UnrealNetwork.h"
+#include "Engine/ActorChannel.h"
 
 
 
@@ -20,9 +23,12 @@ void UYActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (TSubclassOf<UYAction> ActionClass : DefaultActions)
+	if (GetOwner()->HasAuthority())
 	{
-		AddAction(GetOwner(), ActionClass);
+		for (TSubclassOf<UYAction> ActionClass : DefaultActions)
+		{
+			AddAction(GetOwner(), ActionClass);
+		}
 	}
 }
 
@@ -31,8 +37,16 @@ void UYActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
-	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
+	//FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
+	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
+
+	for (UYAction* Action : Actions)
+	{
+		FColor TextColor = Action->IsRunning() ? FColor::Blue : FColor::White;
+		FString ActionMsg = FString::Printf(TEXT("[%s] Action: %s"), *GetNameSafe(GetOwner()), *GetNameSafe(Action));
+
+		LogOnScreen(this, ActionMsg, TextColor, 0.0f);
+	}
 }
 
 
@@ -43,9 +57,11 @@ void UYActionComponent::AddAction(AActor* Instigator, TSubclassOf<UYAction> Acti
 		return;
 	}
 
-	UYAction* NewAction = NewObject<UYAction>(this, ActionClass);
+	UYAction* NewAction = NewObject<UYAction>(GetOwner(), ActionClass);
 	if (ensure(NewAction))
 	{
+		NewAction->Initialize(this);
+
 		Actions.Add(NewAction);
 
 		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
@@ -111,4 +127,44 @@ void UYActionComponent::ServerStartAction_Implementation(AActor* Instigator, FNa
 {
 	StartActionByName(Instigator, ActionName);
 }
+
+
+UYAction* UYActionComponent::GetAction(TSubclassOf<UYAction> ActionClass) const
+{
+	for (UYAction* Action : Actions)
+	{
+		if (Action && Action->IsA(ActionClass))
+		{
+			return Action;
+		}
+	}
+
+	return nullptr;
+}
+
+
+bool UYActionComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool WorteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+	for (UYAction* Action : Actions)
+	{
+		if (Action)
+		{
+			WorteSomething |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
+		}
+	}
+
+	return WorteSomething;
+}
+
+
+void UYActionComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UYActionComponent, Actions);
+}
+
+
+
 
