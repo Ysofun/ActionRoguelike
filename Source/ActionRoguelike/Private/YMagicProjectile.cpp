@@ -36,6 +36,15 @@ void AYMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 
 		if (UYGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
+			if (APawn* OtherPawn = Cast<APawn>(OtherActor))
+			{
+				APlayerController* OtherController = OtherPawn->GetController<APlayerController>();
+				if (OtherController)
+				{
+					OtherController->ClientPlayCameraShake(ImpactShake);
+				}
+			}
+
 			Explode();
 
 			if (ActionComp)

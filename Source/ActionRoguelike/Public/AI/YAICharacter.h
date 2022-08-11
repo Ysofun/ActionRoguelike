@@ -28,7 +28,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
-	void GetTargetActor(AActor* NewTarget);
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> SpottedWidgetClass;
+
+	void SetTargetActor(AActor* NewTarget);
+
+	APawn* GetTargetActor() const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UYAttributeComponent* AttributeComp;

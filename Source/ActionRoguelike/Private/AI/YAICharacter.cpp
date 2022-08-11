@@ -42,7 +42,7 @@ void AYAICharacter::PostInitializeComponents()
 }
 
 
-void AYAICharacter::GetTargetActor(AActor* NewTarget)
+void AYAICharacter::SetTargetActor(AActor* NewTarget)
 {
 	AAIController* AIC = Cast<AAIController>(GetController());
 	if (AIC)
@@ -58,7 +58,7 @@ void AYAICharacter::OnHealthChanged(AActor* InstigatorActor, UYAttributeComponen
 	{
 		if (InstigatorActor != this)
 		{
-			GetTargetActor(InstigatorActor);
+			SetTargetActor(InstigatorActor);
 		}
 
 		if (ActiveHealthBar == nullptr)
@@ -99,7 +99,32 @@ void AYAICharacter::OnHealthChanged(AActor* InstigatorActor, UYAttributeComponen
 
 void AYAICharacter::OnPawnSeen(APawn* Pawn)
 {
-	GetTargetActor(Pawn);
+	if (GetTargetActor() != Pawn)
+	{
+		SetTargetActor(Pawn);
 
-	DrawDebugString(GetWorld(), GetActorLocation(), "PLATER SPOTTED", nullptr, FColor::White, 4.0f, true);
+		UYWorldUserWidget* NewWidget = CreateWidget<UYWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+		if (NewWidget)
+		{
+			NewWidget->AttachedActor = this;
+
+			NewWidget->AddToViewport(10);
+		}
+
+		DrawDebugString(GetWorld(), GetActorLocation(), "PLATER SPOTTED", nullptr, FColor::White, 4.0f, true);
+	}
 }
+
+
+APawn* AYAICharacter::GetTargetActor() const
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		return Cast<APawn>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	}
+
+	return nullptr;
+}
+
+

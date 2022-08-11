@@ -41,9 +41,7 @@ void AYProjectileBase::Explode_Implementation()
 	if (ensure(!IsPendingKill()))
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, GetActorLocation(), GetActorRotation());
-		UGameplayStatics::PlayWorldCameraShake(this, ImpactShake, GetActorLocation(), 10.0f, 30.0f);
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-
 		Destroy();
 	}
 }
