@@ -17,9 +17,6 @@ class ACTIONROGUELIKE_API AYMagicProjectile : public AYProjectileBase
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, Category = "Rage")
-	float RageAmount;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float DamageAmount;
 

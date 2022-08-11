@@ -209,7 +209,7 @@ void AYGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	UE_LOG(LogTemp, Log, TEXT("OnActorKilled: Victim: %s, Killer: %s"), *GetNameSafe(VictimActor), *GetNameSafe(Killer));
 
 	APawn* KillerPawn = Cast<APawn>(Killer);
-	if (KillerPawn)
+	if (KillerPawn && KillerPawn != VictimActor)
 	{
 		AYPlayerState* PS = KillerPawn->GetPlayerState<AYPlayerState>();
 		if (PS)

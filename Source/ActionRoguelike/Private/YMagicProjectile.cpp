@@ -17,7 +17,6 @@ AYMagicProjectile::AYMagicProjectile()
 {
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AYMagicProjectile::OnActorOverlap);
 
-	RageAmount = 20.0f;
 	DamageAmount = 20.0f;
 }
 
@@ -39,12 +38,10 @@ void AYMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		{
 			Explode();
 
-			if (ActionComp)
+			if (ActionComp && HasAuthority())
 			{
 				ActionComp->AddAction(GetInstigator(), BurningActionClass);
 			}
 		}
-
-		UYGameplayFunctionLibrary::ApplyRage(GetInstigator(), OtherActor, RageAmount);
 	}
 }

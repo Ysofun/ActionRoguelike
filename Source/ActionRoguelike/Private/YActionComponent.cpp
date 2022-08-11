@@ -23,6 +23,7 @@ void UYActionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Is Server?
 	if (GetOwner()->HasAuthority())
 	{
 		for (TSubclassOf<UYAction> ActionClass : DefaultActions)
@@ -54,6 +55,13 @@ void UYActionComponent::AddAction(AActor* Instigator, TSubclassOf<UYAction> Acti
 {
 	if (!ensure(ActionClass))
 	{
+		return;
+	}
+
+	// Skip for clients
+	if (!GetOwner()->HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Client attemping to AddAction. [Class: %s]"), *GetNameSafe(ActionClass));
 		return;
 	}
 
@@ -94,6 +102,7 @@ bool UYActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 				continue;
 			}
 
+			// Notify Server
 			if (!GetOwner()->HasAuthority())
 			{
 				ServerStartAction(Instigator, ActionName);
@@ -114,6 +123,12 @@ bool UYActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 		{
 			if (Action->IsRunning())
 			{
+				// Notify Server
+				if (!GetOwner()->HasAuthority())
+				{
+					ServerStopAction(Instigator, ActionName);
+				}
+
 				Action->StopAction(Instigator);
 				return true;
 			}
@@ -126,6 +141,12 @@ bool UYActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 void UYActionComponent::ServerStartAction_Implementation(AActor* Instigator, FName ActionName)
 {
 	StartActionByName(Instigator, ActionName);
+}
+
+
+void UYActionComponent::ServerStopAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StopActionByName(Instigator, ActionName);
 }
 
 

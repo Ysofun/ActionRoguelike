@@ -16,7 +16,6 @@ UYAttributeComponent::UYAttributeComponent()
 
 	RageMax = 100;
 	Rage = 0;
-	RagePerHealth = 5.0f;
 
 	SetIsReplicatedByDefault(true);
 }

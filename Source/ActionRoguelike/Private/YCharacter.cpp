@@ -11,6 +11,9 @@
 #include "YAttributeComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "YActionComponent.h"
+#include <YGameplayFunctionLibrary.h>
+
+
 
 // Sets default values
 AYCharacter::AYCharacter()
@@ -42,7 +45,7 @@ AYCharacter::AYCharacter()
 
 	// Data Initialize
 	TimeToHitParamName = "TimeToHit";
-	RageCost = 40.0f;
+	RageAmount = 5.0f;
 }
 
 void AYCharacter::PostInitializeComponents()
@@ -119,11 +122,7 @@ void AYCharacter::PrimaryAttack()
 
 void AYCharacter::SpecialAttack()
 {
-	if (AttributeComp->GetRage() > RageCost)
-	{
-		ActionComp->StartActionByName(this, "BlackHole");
-		AttributeComp->ApplyRageChange(this, -RageCost);
-	}
+	ActionComp->StartActionByName(this, "BlackHole");
 }
 
 void AYCharacter::DashAttack()
@@ -153,11 +152,14 @@ void AYCharacter::OnHealthChanged(AActor* InstigatorActor, UYAttributeComponent*
 	if (Delta < 0.0f)
 	{
 		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
+		UYGameplayFunctionLibrary::ApplyRage(InstigatorActor, this, FMath::Abs(RageAmount * Delta));
 	}
 
 	if (NewHealth <= 0.0 && Delta < 0.0f)
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+
+		SetLifeSpan(5.0f);
 	}
 }

@@ -47,7 +47,7 @@ protected:
 	FName TimeToHitParamName;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Attack")
-	float RageCost;
+	float RageAmount;
 
 	void MoveForward(float value);
 	void MoveRight(float value);
