@@ -30,6 +30,11 @@ void AYItemChest::Interact_Implementation(APawn* InstigatorPawn)
 }
 
 
+void AYItemChest::OnActorLoaded_Implementation()
+{
+	OnRep_LidOpened();
+}
+
 void AYItemChest::OnRep_LidOpened()
 {
 	float CurrPitch = bLidOpened ? TargetPitch : 0.0f;

@@ -11,7 +11,11 @@
 #include "DrawDebugHelpers.h"
 #include "YCharacter.h"
 #include "YPlayerState.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "YSaveGame.h"
+#include "GameFramework/GameStateBase.h"
+#include <YGameplayInterface.h>
+#include <Serialization/ObjectAndNameAsStringProxyArchive.h>
 
 
 
@@ -29,8 +33,17 @@ AYGameModeBase::AYGameModeBase()
 	RequiredPowerupDistance = 2000.0f;
 
 	PlayerStateClass = AYPlayerState::StaticClass();
+
+	SlotName = "SaveGame01";
 }
 
+
+void AYGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	LoadSaveGame();
+}
 
 void AYGameModeBase::StartPlay()
 {
@@ -50,6 +63,17 @@ void AYGameModeBase::StartPlay()
 }
 
 
+void AYGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	AYPlayerState* PS = NewPlayer->GetPlayerState<AYPlayerState>();
+	if (PS)
+	{
+		PS->LoadPlayerState(CurrentSaveGame);
+	}
+}
+
 void AYGameModeBase::KillAll()
 {
 	for (TActorIterator<AYAICharacter> It(GetWorld()); It; ++It)
@@ -63,6 +87,7 @@ void AYGameModeBase::KillAll()
 		}
 	}
 }
+
 
 void AYGameModeBase::SpawnBotTimeElapsed()
 {
@@ -219,3 +244,96 @@ void AYGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 	}
 }
 
+
+void AYGameModeBase::WriteSaveGame()
+{
+	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
+	{
+		AYPlayerState* PS = Cast<AYPlayerState>(GameState->PlayerArray[i]);
+		if (PS)
+		{
+			PS->SavePlayerState(CurrentSaveGame);
+			break; // single player at this point
+		}
+	}
+
+	// clear the actor data array
+	CurrentSaveGame->SaveActors.Empty();
+
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+
+		if (!Actor->Implements<UYGameplayInterface>())
+		{
+			continue;
+		}
+
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.Transform = Actor->GetActorTransform();
+
+		// Pass the array to fill with data from Actor
+		FMemoryWriter MemWriter(ActorData.ByteData);
+
+		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+		// Find only variables with UPROPERTY(SaveGame)
+		Ar.ArIsSaveGame = true;
+		// Converts Actor's SaveGame UPROPERTIES into binary array
+		Actor->Serialize(Ar);
+
+
+		CurrentSaveGame->SaveActors.Add(ActorData);
+	}
+
+	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+}
+
+
+void AYGameModeBase::LoadSaveGame()
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		CurrentSaveGame = Cast<UYSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		if (CurrentSaveGame == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load SaveGame Data."));
+			return;
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Loaded SaveGame Data."));
+
+		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+		{
+			AActor* Actor = *It;
+
+			if (!Actor->Implements<UYGameplayInterface>())
+			{
+				continue;
+			}
+
+			for (FActorSaveData ActorData : CurrentSaveGame->SaveActors)
+			{
+				if (ActorData.ActorName == Actor->GetName())
+				{
+					Actor->SetActorTransform(ActorData.Transform);
+
+					FMemoryReader MemReader(ActorData.ByteData);
+
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+					Ar.ArIsSaveGame = true;
+					// Converts binary array back into Actor variables
+					Actor->Serialize(Ar);
+
+					IYGameplayInterface::Execute_OnActorLoaded(Actor);
+
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		CurrentSaveGame = Cast<UYSaveGame>(UGameplayStatics::CreateSaveGameObject(UYSaveGame::StaticClass()));
+	}
+}

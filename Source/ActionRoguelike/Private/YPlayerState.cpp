@@ -2,6 +2,7 @@
 
 
 #include "YPlayerState.h"
+#include <YSaveGame.h>
 
 
 
@@ -37,6 +38,24 @@ bool AYPlayerState::RemoveCredits(int32 Delta)
 	OnCreditsChanged.Broadcast(this, Credits, Delta);
 
 	return true;
+}
+
+
+void AYPlayerState::SavePlayerState_Implementation(UYSaveGame* SaveObject)
+{
+	if (SaveObject)
+	{
+		SaveObject->Credits = Credits;
+	}
+}
+
+
+void AYPlayerState::LoadPlayerState_Implementation(UYSaveGame* SaveObject)
+{
+	if (SaveObject)
+	{
+		Credits = SaveObject->Credits;
+	}
 }
 
 
