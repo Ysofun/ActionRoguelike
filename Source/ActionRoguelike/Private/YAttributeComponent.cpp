@@ -64,11 +64,19 @@ bool UYAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 bool UYAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 {
 	float OldRage = Rage;
-
-	Rage = FMath::Clamp<float>(Rage + Delta, 0, RageMax);
+	float NewRage = FMath::Clamp<float>(Rage + Delta, 0, RageMax);
 
 	float ActualDelta = Rage - OldRage;
-	OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
+
+	if (GetOwner()->HasAuthority())
+	{
+		Rage = NewRage;
+
+		if (ActualDelta != 0)
+		{
+			MulticastRageChanged(InstigatorActor, Rage, Delta);
+		}
+	}
 
 	return ActualDelta != 0;
 }
@@ -79,6 +87,11 @@ void UYAttributeComponent::MulticastHealthChanged_Implementation(AActor* Instiga
 	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }
 
+
+void UYAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewRage, Delta);
+}
 
 bool UYAttributeComponent::Kill(AActor* InstigatorActor)
 {

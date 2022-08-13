@@ -23,6 +23,11 @@ public:
 
 protected:
 
+	/* Hit Effects */
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName TimeToHitParamName;
+
+	/* UI */
 	UYWorldUserWidget* ActiveHealthBar;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -31,10 +36,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> SpottedWidgetClass;
 
-	void SetTargetActor(AActor* NewTarget);
-
-	APawn* GetTargetActor() const;
-
+	/* Components */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UYAttributeComponent* AttributeComp;
 
@@ -46,12 +48,16 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
+	void SetTargetActor(AActor* NewTarget);
+
+	APawn* GetTargetActor() const;
+
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UYAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
 
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName TimeToHitParamName;
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPawnSeen();
 };

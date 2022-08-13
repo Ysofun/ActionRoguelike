@@ -3,6 +3,7 @@
 
 #include "YPlayerState.h"
 #include <YSaveGame.h>
+#include <Net/UnrealNetwork.h>
 
 
 
@@ -54,12 +55,26 @@ void AYPlayerState::LoadPlayerState_Implementation(UYSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		Credits = SaveObject->Credits;
+		AddCredits(SaveObject->Credits - Credits);
 	}
+}
+
+
+void AYPlayerState::OnRep_Credits(int32 OldCredits)
+{
+	OnCreditsChanged.Broadcast(this, Credits, Credits - OldCredits);
 }
 
 
 int32 AYPlayerState::GetCredits() const
 {
 	return Credits;
+}
+
+
+void AYPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AYPlayerState, Credits);
 }

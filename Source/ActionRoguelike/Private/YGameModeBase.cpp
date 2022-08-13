@@ -65,13 +65,13 @@ void AYGameModeBase::StartPlay()
 
 void AYGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-
 	AYPlayerState* PS = NewPlayer->GetPlayerState<AYPlayerState>();
 	if (PS)
 	{
 		PS->LoadPlayerState(CurrentSaveGame);
 	}
+
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 }
 
 void AYGameModeBase::KillAll()

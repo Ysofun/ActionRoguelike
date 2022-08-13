@@ -103,15 +103,19 @@ void AYAICharacter::OnPawnSeen(APawn* Pawn)
 	{
 		SetTargetActor(Pawn);
 
-		UYWorldUserWidget* NewWidget = CreateWidget<UYWorldUserWidget>(GetWorld(), SpottedWidgetClass);
-		if (NewWidget)
-		{
-			NewWidget->AttachedActor = this;
+		MulticastPawnSeen();
+	}
+}
 
-			NewWidget->AddToViewport(10);
-		}
 
-		DrawDebugString(GetWorld(), GetActorLocation(), "PLATER SPOTTED", nullptr, FColor::White, 4.0f, true);
+void AYAICharacter::MulticastPawnSeen_Implementation()
+{
+	UYWorldUserWidget* NewWidget = CreateWidget<UYWorldUserWidget>(GetWorld(), SpottedWidgetClass);
+	if (NewWidget)
+	{
+		NewWidget->AttachedActor = this;
+
+		NewWidget->AddToViewport(10);
 	}
 }
 

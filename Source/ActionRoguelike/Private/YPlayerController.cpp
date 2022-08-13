@@ -11,3 +11,15 @@ void AYPlayerController::SetPawn(APawn* InPawn)
 
 	OnPawnChanged.Broadcast(InPawn);
 }
+
+void AYPlayerController::BeginPlayingState()
+{
+	BlueprintBeginPlayingState();
+}
+
+void AYPlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	OnPlayerStateReceived.Broadcast(PlayerState);
+}

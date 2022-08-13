@@ -23,6 +23,8 @@ AYPowerUpActor::AYPowerUpActor()
 	RespawnTime = 10.0f;
 
 	SetReplicates(true);
+	SphereComp->SetIsReplicated(true);
+	MeshComp->SetIsReplicated(true);
 }
 
 void AYPowerUpActor::Interact_Implementation(APawn* InstigatorPawn)
