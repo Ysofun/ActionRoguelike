@@ -35,10 +35,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Rage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax;
 
 	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we moved the 'state' out of YCharacter

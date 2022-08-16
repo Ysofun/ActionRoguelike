@@ -3,8 +3,7 @@
 
 #include "YActionEffect.h"
 #include "YActionComponent.h"
-
-
+#include <GameFramework/GameStateBase.h>
 
 
 
@@ -53,6 +52,19 @@ void UYActionEffect::StopAction_Implementation(AActor* Instigator)
 	{
 		Comp->RemoveAction(this);
 	}
+}
+
+
+float UYActionEffect::GetTimeRemaining() const
+{
+	AGameStateBase* GS = GetWorld()->GetGameState<AGameStateBase>();
+	if (GS)
+	{
+		float EndTime = TimeStarted + Duration;
+		return EndTime - GS->GetServerWorldTimeSeconds();
+	}
+
+	return Duration;
 }
 
 

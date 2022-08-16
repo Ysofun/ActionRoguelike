@@ -151,8 +151,9 @@ void AYCharacter::OnHealthChanged(AActor* InstigatorActor, UYAttributeComponent*
 {
 	if (Delta < 0.0f)
 	{
+		//UE_LOG(LogTemp, Log, TEXT("Player Health Change"));
 		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
-		UYGameplayFunctionLibrary::ApplyRage(InstigatorActor, this, FMath::Abs(RageAmount * Delta));
+		AttributeComp->ApplyRageChange(InstigatorActor, FMath::Abs(RageAmount * Delta));
 	}
 
 	if (NewHealth <= 0.0 && Delta < 0.0f)

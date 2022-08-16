@@ -66,10 +66,11 @@ bool UYAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 	float OldRage = Rage;
 	float NewRage = FMath::Clamp<float>(Rage + Delta, 0, RageMax);
 
-	float ActualDelta = Rage - OldRage;
+	float ActualDelta = NewRage - OldRage;
 
 	if (GetOwner()->HasAuthority())
 	{
+		//UE_LOG(LogTemp, Log, TEXT("Rage Change : %s"), *FString::SanitizeFloat(ActualDelta));
 		Rage = NewRage;
 
 		if (ActualDelta != 0)
@@ -164,4 +165,6 @@ void UYAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(UYAttributeComponent, Health);
 	DOREPLIFETIME(UYAttributeComponent, HealthMax);
+	DOREPLIFETIME(UYAttributeComponent, Rage);
+	DOREPLIFETIME(UYAttributeComponent, RageMax);
 }

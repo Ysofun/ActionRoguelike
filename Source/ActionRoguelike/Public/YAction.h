@@ -35,6 +35,9 @@ class ACTIONROGUELIKE_API UYAction : public UObject
 	
 protected:
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	UTexture2D* Icon;
+
 	UPROPERTY(Replicated)
 	UYActionComponent* ActionComp;
 
@@ -50,15 +53,18 @@ protected:
 	UPROPERTY(ReplicatedUsing = "OnRep_RepData")
 	FActionRepData RepData;
 
+	UPROPERTY(Replicated)
+	float TimeStarted;
+
 	UFUNCTION()
 	void OnRep_RepData();
 
 public:
 	
-	void Initialize(UYActionComponent* NewActionComp);
-
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	bool bAutoStart;
+	
+	void Initialize(UYActionComponent* NewActionComp);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool IsRunning() const;
@@ -77,13 +83,7 @@ public:
 
 	UWorld* GetWorld() const override;
 
-	inline FTimerManager& GetWorldTimerManager() const
-	{
-		return GetWorld()->GetTimerManager();
-	}
+	inline FTimerManager& GetWorldTimerManager() const { return GetWorld()->GetTimerManager(); }
 
-	virtual bool IsSupportedForNetworking() const override
-	{
-		return true;
-	}
+	virtual bool IsSupportedForNetworking() const override { return true; }
 };
