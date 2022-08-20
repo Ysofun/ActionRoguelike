@@ -32,6 +32,11 @@ void AYPowerUpActor::Interact_Implementation(APawn* InstigatorPawn)
 	// Interact logic
 }
 
+FText AYPowerUpActor::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 void AYPowerUpActor::ShowPowerUp()
 {
 	SetPowerUpState(true);
